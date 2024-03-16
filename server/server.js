@@ -10,6 +10,7 @@ app.use(express.json());
 app.use(cors());
 
 let userNames = [];
+let userSocketIds = {};
 
 // const io = new Server(8800, {
 //   cors: {
@@ -21,12 +22,20 @@ app.get("/api", (req, res) => {
   res.send("Hello World!");
 });
 
-app.put("/api/v1/users/checkUser", (req, res) => {
-  console.log("Checking user");
+// app.get("/api/v1/users/checkUser", (req, res) => {
+//   console.log("Checking user");
+//   console.log(req.body);
+//   const username = req.body.username;
+//   const userExists = userNames.includes(username);
+//   res.send(userExists);
+// });
+
+app.post("/api/v1/users/createUser", (req, res) => {
+  console.log("Creating user");
   console.log(req.body);
   const username = req.body.username;
-  const userExists = userNames.includes(username);
-  res.send(userExists);
+  userNames.push(username);
+  res.send("User created");
 });
 
 // io.on("connection", (socket) => {

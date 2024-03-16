@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import LoginPage from "./pages/LoginPage";
-import ChatPage from "./pages/ChatPage";
+import ChattingPage from "./pages/ChattingPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import reportWebVitals from "./reportWebVitals";
 
@@ -13,12 +13,10 @@ const router = createBrowserRouter([
     path: "/",
     element: <LoginPage />,
     errorElement: <NotFoundPage />,
-    children: [
-      {
-        path: "/chat",
-        element: <ChatPage />,
-      },
-    ],
+  },
+  {
+    path: "/chat",
+    element: <ChattingPage />,
   },
 ]);
 

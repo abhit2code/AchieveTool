@@ -1,38 +1,57 @@
 import React, { useState } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleLogin = () => {
     // Simulate checking if username exists
-    const userExists = checkIfUserExists(username);
+    // const userExists = checkIfUserExists(username);
 
-    if (userExists) {
-      setError("Username already exists. Please choose a different one.");
-    } else {
-      console.log("User does not exist. Logging in...");
-    }
-  };
+    // if (userExists) {
+    //   setError("Username already exists. Please choose a different one.");
+    // } else {
+    //   console.log("User does not exist");
+    // }
 
-  const checkIfUserExists = (username) => {
     try {
       axios
-        .put("http://localhost:5000/api/v1/users/checkUser", {
+        .post("http://localhost:5000/api/v1/users/createUser", {
           username: username,
         })
         .then((res) => {
-          return res.data;
+          console.log(res.data);
+          navigate("/chat", { state: { username: username } });
         })
         .catch((err) => {
           console.error(err);
         });
     } catch (error) {
-      console.error("Error getting response:", error);
+      console.error("Error creating user:", error);
     }
   };
+
+  //   const checkIfUserExists = (username) => {
+  //     try {
+  //       axios
+  //         .get(
+  //           `http://localhost:5000/api/v1/users/checkUser?userName=${username}`
+  //         )
+  //         .then((res) => {
+  //           return res.data;
+  //         })
+  //         .catch((err) => {
+  //           console.error(err);
+  //         });
+  //     } catch (error) {
+  //       console.error("Error getting response:", error);
+  //     }
+  //   };
 
   return (
     <Box
@@ -52,8 +71,8 @@ const LoginPage = () => {
           variant="outlined"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          error={Boolean(error)}
-          helperText={error}
+          // error={Boolean(error)}
+          // helperText={error}
           margin="normal"
         />
         <Button
