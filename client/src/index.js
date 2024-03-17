@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import ChattingPage from "./pages/ChattingPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import reportWebVitals from "./reportWebVitals";
+import { UserProvider } from "./context/UserContext";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -23,7 +24,9 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <UserProvider>
+      <RouterProvider router={router} />
+    </UserProvider>
   </React.StrictMode>
 );
 

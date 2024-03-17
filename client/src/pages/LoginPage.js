@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../context/UserContext";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   // const [error, setError] = useState("");
+
+  const { login } = useUserContext();
 
   const navigate = useNavigate();
 
@@ -26,6 +29,7 @@ const LoginPage = () => {
         })
         .then((res) => {
           console.log(res.data);
+          login(username);
           navigate("/chat", { state: { username: username } });
         })
         .catch((err) => {
