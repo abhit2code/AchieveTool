@@ -45,17 +45,23 @@ const Message = (props) => {
   console.log(Object.values(props.message)[0][0]);
 
   return (
-    <div style={props.owner ? msg_cont_owner : msg_cont_sender}>
-      <p
-        className="msg_text"
-        style={props.owner ? msg_text_owner : msg_text_sender}
-      >
-        {Object.values(props.message)[0][0]}
-      </p>
-      <span className="msg_time" style={msg_time}>
-        {Object.values(props.message)[0][1]}
-      </span>
-    </div>
+    <>
+      {Object.values(props.message)[0][2] === "chatting" ? (
+        <div style={props.owner ? msg_cont_owner : msg_cont_sender}>
+          <p
+            className="msg_text"
+            style={props.owner ? msg_text_owner : msg_text_sender}
+          >
+            {Object.values(props.message)[0][0]}
+          </p>
+          <span className="msg_time" style={msg_time}>
+            {Object.values(props.message)[0][1]}
+          </span>
+        </div>
+      ) : (
+        <p style={{ color: "black" }}>{Object.values(props.message)[0][0]}</p>
+      )}
+    </>
   );
 };
 

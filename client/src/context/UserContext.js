@@ -1,3 +1,4 @@
+import { set } from "date-fns";
 import { createContext, useContext, useState } from "react";
 
 const UserContext = createContext();
@@ -5,9 +6,10 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  const login = (userData) => {
+  const login = (userName, socketId) => {
     // Perform login logic, set user data, etc.
-    setUser(userData);
+    // setUser([userName, socketId]);
+    setUser(userName);
   };
 
   const logout = ({ returnTo }) => {

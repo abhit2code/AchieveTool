@@ -8,20 +8,28 @@ import {
   Button,
   Input,
 } from "@mui/material";
-import { useLocation } from "react-router-dom";
 import { format, set } from "date-fns";
 import Message from "../components/Message";
 import { useUserContext } from "../context/UserContext";
 import "./ChattingPageStyle.css";
+import axios from "axios";
+import socket from "../ChatSocket";
+// import { io } from "socket.io-client";
 
 const ChattingPage = () => {
-  const { user } = useUserContext();
+  // const socket = io("http://localhost:8900");
+
+  const usert = useUserContext();
+
+  const userName = usert.user;
+  // socket.emit("addUser", userName);
+  console.log("Username:", userName);
+  console.log("Socket ID:", socket.id);
 
   const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState([
-    { abhi: ["hi", "3:45 pm"] },
-    { a2: ["hello", "3:55 pm"] },
-  ]);
+  const [messages, setMessages] = useState([]);
+
+  const [reciever, setReciever] = useState({});
 
   const messageBoxRef = useRef(null);
 
@@ -33,9 +41,48 @@ const ChattingPage = () => {
     const timestamp = Date.now();
     setMessages([
       ...messages,
-      { [user]: [newMessage, format(timestamp, "h:mm a")] },
+      { [userName]: [newMessage, format(timestamp, "h:mm a"), "chatting"] },
     ]);
+    socket.emit("sendChatMessage", {
+      recieverSocketId: reciever[Object.keys(reciever)[0]],
+      message: newMessage,
+    });
     setNewMessage("");
+  };
+
+  const connectToUser = async () => {
+    console.log("In connectToUser", reciever);
+    try {
+      await axios
+        .get(
+          `http://localhost:5000/api/v1/users/getOtherPersonSocketId?socketId=${socket.id}`
+        )
+        .then((res) => {
+          if (res.data.recieverName) {
+            const { recieverSocketId, recieverName } = res.data;
+            console.log("res data: ", res.data);
+            console.log("setting reciever: ", recieverSocketId, recieverName);
+            setReciever({ [recieverName]: recieverSocketId });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log("Error finding the other user's socket ID: ", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log("In useEffect for calling connectToUser");
+    connectToUser();
+  }, []);
+
+  const reconnectToUser = async () => {
+    try {
+    } catch (error) {
+      console.log("Error reconnecting to other person: ", error);
+    }
   };
 
   useEffect(() => {
@@ -44,6 +91,63 @@ const ChattingPage = () => {
       messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (Object.keys(reciever).length !== 0) {
+      console.log("reciever:", reciever);
+      console.log(
+        "sending the message to reciever: ",
+        reciever[Object.keys(reciever)[0]]
+      );
+      socket.emit("connectedToUserMessage", {
+        recieverSocketId: reciever[Object.keys(reciever)[0]],
+      });
+    }
+  }, [Object.keys(reciever)[0]]);
+
+  useEffect(() => {
+    socket.on("settingConnectedUserMessage", (data) => {
+      setMessages([
+        ...messages,
+        {
+          noOne: [data.message, "", "info"],
+        },
+      ]);
+    });
+
+    socket.on("settingDisconnectedUserMessage", (data) => {
+      setMessages([
+        ...messages,
+        {
+          noOne: [`Disconnected to ${Object.keys(reciever)[0]}`, "", "info"],
+        },
+      ]);
+    });
+
+    socket.on("tryAgainToPair", (data) => {
+      console.log("Trying again to pair with:", data);
+      connectToUser();
+    });
+
+    socket.on("recieveChatMessage", (data) => {
+      setMessages([
+        ...messages,
+        {
+          [Object.keys(reciever)[0]]: [
+            data.message,
+            format(Date.now(), "h:mm a"),
+            "chatting",
+          ],
+        },
+      ]);
+    });
+    return () => {
+      socket.off("settingConnectedUserMessage");
+      socket.off("settingDisconnectedUserMessage");
+      socket.off("tryAgainToPair");
+      socket.off("recieveChatMessage");
+    };
+  });
 
   return (
     <div
@@ -66,7 +170,7 @@ const ChattingPage = () => {
       >
         <AppBar position="static">
           <Toolbar>
-            <Typography variant="h6">{user}</Typography>
+            <Typography variant="h6">{""}</Typography>
           </Toolbar>
         </AppBar>
         <div
@@ -81,7 +185,7 @@ const ChattingPage = () => {
           {messages.map((m, index) => (
             <Message
               key={index}
-              owner={Object.keys(m)[0] === user}
+              owner={Object.keys(m)[0] === userName}
               message={m}
             />
           ))}

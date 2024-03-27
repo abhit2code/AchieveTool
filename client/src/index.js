@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import LoginPage from "./pages/LoginPage";
 import ChattingPage from "./pages/ChattingPage";
+import Testing from "./pages/Testing";
 import NotFoundPage from "./pages/NotFoundPage";
 import reportWebVitals from "./reportWebVitals";
 import { UserProvider } from "./context/UserContext";
