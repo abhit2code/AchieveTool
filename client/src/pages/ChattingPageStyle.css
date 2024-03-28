@@ -1,0 +1,15 @@
+/* Add this CSS to your global styles or component-specific styles */
+.MessageBox {
+    height: 100%; /* Ensure the MessageBox takes up full height */
+    overflow: auto; /* Enable scrolling */
+  }
+  
+  .MessageBox::-webkit-scrollbar {
+    display: none; /* Hide the scrollbar */
+  }
+  
+  /* Optional: Customize scrollbar appearance on hover */
+  .MessageBox:hover::-webkit-scrollbar-thumb {
+    background: #555; /* Color of the scrollbar thumb on hover */
+  }
+  

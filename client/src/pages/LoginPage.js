@@ -1,32 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../context/UserContext";
+import socket from "../ChatSocket";
+import { set } from "date-fns";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
-  // const [error, setError] = useState("");
+  const [error, setError] = useState("");
+
+  const { login, user } = useUserContext();
 
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // Simulate checking if username exists
-    // const userExists = checkIfUserExists(username);
-
-    // if (userExists) {
-    //   setError("Username already exists. Please choose a different one.");
-    // } else {
-    //   console.log("User does not exist");
-    // }
-
+  const handleLogin = async () => {
     try {
-      axios
+      await axios
         .post("http://localhost:5000/api/v1/users/createUser", {
           username: username,
         })
         .then((res) => {
           console.log(res.data);
-          navigate("/chat", { state: { username: username } });
+          // socket.emit("addUser", username);
+          // login([username, socket]);
+          login(username);
+          navigate("/chat");
         })
         .catch((err) => {
           console.error(err);

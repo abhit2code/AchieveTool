@@ -10,25 +10,21 @@ app.use(express.json());
 app.use(cors());
 
 let userNames = [];
-let userSocketIds = {};
+// let userSocketIds = [];
+let freeSocketIds = [];
+// let busySocketIds = [];
+let connectedSocketIds = {};
+let socketIdUserNameMapping = {};
 
-// const io = new Server(8800, {
-//   cors: {
-//     origin: "https://localhost:3000",
-//   },
-// });
+const io = new Server(8900, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
 
 app.get("/api", (req, res) => {
   res.send("Hello World!");
 });
-
-// app.get("/api/v1/users/checkUser", (req, res) => {
-//   console.log("Checking user");
-//   console.log(req.body);
-//   const username = req.body.username;
-//   const userExists = userNames.includes(username);
-//   res.send(userExists);
-// });
 
 app.post("/api/v1/users/createUser", (req, res) => {
   console.log("Creating user");
@@ -38,9 +34,155 @@ app.post("/api/v1/users/createUser", (req, res) => {
   res.send("User created");
 });
 
-// io.on("connection", (socket) => {
-//   console.log("a user connected");
-// });
+app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
+  console.log("Getting socket ID");
+  const senderSocketId = req.query.socketId;
+  let recieverSocketId;
+  let recieverName;
+  let response;
+  console.log("Sender Socket ID:", senderSocketId);
+  // console.log("busySocketIds:", busySocketIds);
+  // if (busySocketIds.includes(senderSocketId)) {
+  if (connectedSocketIds[senderSocketId]) {
+    console.log("inside 1st if of getOtherPersonSocketId");
+    recieverSocketId = connectedSocketIds[senderSocketId];
+    // delete connectedSocketIds[senderSocketId];
+    recieverName = socketIdUserNameMapping[recieverSocketId];
+    response = {
+      recieverSocketId,
+      recieverName,
+    };
+  } else {
+    console.log("inside 2nd if of getOtherPersonSocketId");
+    console.log("Free Socket len:", freeSocketIds.length);
+    if (freeSocketIds.length < 2) {
+      console.log("o1sender:", senderSocketId);
+      // response = "No other user available";
+      response = {
+        recieverSocketId: null,
+        recieverName: null,
+      };
+    } else {
+      console.log("o2 sender:", senderSocketId);
+      do {
+        recieverSocketId =
+          freeSocketIds[Math.floor(Math.random() * freeSocketIds.length)];
+      } while (recieverSocketId === senderSocketId);
+
+      recieverName = socketIdUserNameMapping[recieverSocketId];
+      response = {
+        recieverSocketId,
+        recieverName,
+      };
+      // busySocketIds.push(recieverSocketId);
+      // busySocketIds.push(senderSocketId);
+
+      const freeIndex1 = freeSocketIds.indexOf(senderSocketId);
+      if (freeIndex1 !== -1) {
+        freeSocketIds.splice(freeIndex1, 1);
+      }
+
+      const freeIndex2 = freeSocketIds.indexOf(recieverSocketId);
+      if (freeIndex2 !== -1) {
+        freeSocketIds.splice(freeIndex2, 1);
+      }
+
+      connectedSocketIds[recieverSocketId] = senderSocketId;
+      connectedSocketIds[senderSocketId] = recieverSocketId;
+    }
+  }
+  res.send(response);
+});
+
+io.on("connection", (socket) => {
+  console.log("a user connected");
+
+  socket.on("addUser", (username) => {
+    if (socketIdUserNameMapping[socket.id]) {
+      console.log("User already added:", username);
+    } else {
+      console.log("Adding user:", username);
+      // userSocketIds.push(socket.id);
+      freeSocketIds.push(socket.id);
+      console.log("user being added id", socket.id);
+      console.log("Free Socket IDs:", freeSocketIds);
+      freeSocketIds.forEach((id) => {
+        if (id !== socket.id) {
+          io.to(id).emit("tryAgainToPair", username);
+        }
+      });
+      socketIdUserNameMapping[socket.id] = username;
+    }
+    // console.log("User Socket IDs:", userSocketIds);
+  });
+
+  socket.on("freeUser", () => {
+    console.log("Freeing user:", socket.id);
+    const freeIndex = freeSocketIds.indexOf(socket.id);
+    console.log("Free Index:", freeIndex);
+    if (freeIndex === -1) {
+      freeSocketIds.push(socket.id);
+      freeSocketIds.forEach((id) => {
+        if (id !== socket.id) {
+          io.to(id).emit("tryAgainToPair", socketIdUserNameMapping[socket.id]);
+        }
+      });
+    }
+    console.log("Free Socket IDs:", freeSocketIds);
+  });
+
+  socket.on("connectedToUserMessage", ({ recieverSocketId }) => {
+    console.log(
+      "Connected to user message",
+      recieverSocketId,
+      socketIdUserNameMapping[recieverSocketId]
+    );
+    io.to(recieverSocketId).emit("settingConnectedUserMessage", {
+      message: `connected to ${socketIdUserNameMapping[socket.id]}`,
+    });
+  });
+
+  socket.on("sendChatMessage", ({ recieverSocketId, message }) => {
+    io.to(recieverSocketId).emit("recieveChatMessage", {
+      message,
+    });
+  });
+
+  socket.on("performCleaning", () => {
+    if (connectedSocketIds[socket.id]) {
+      console.log("Cleaning up");
+      io.to(connectedSocketIds[socket.id]).emit(
+        "settingDisconnectedUserMessage"
+      );
+      delete connectedSocketIds[connectedSocketIds[socket.id]];
+      delete connectedSocketIds[socket.id];
+    }
+    // freeSocketIds.push(socket.id);
+  });
+
+  socket.on("disconnect", () => {
+    console.log(
+      "A client disconnected having name:",
+      socketIdUserNameMapping[socket.id]
+    );
+
+    if (connectedSocketIds[socket.id]) {
+      const recieverSocketId = connectedSocketIds[socket.id];
+      delete connectedSocketIds[socket.id];
+      delete connectedSocketIds[recieverSocketId];
+      io.to(recieverSocketId).emit("settingDisconnectedUserMessage");
+    } else {
+      const freeIndex = freeSocketIds.indexOf(socket.id);
+
+      if (freeIndex !== -1) {
+        freeSocketIds.splice(freeIndex, 1);
+      }
+      console.log("freeIds:", freeSocketIds);
+    }
+
+    delete socketIdUserNameMapping[socket.id];
+  });
+});
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
