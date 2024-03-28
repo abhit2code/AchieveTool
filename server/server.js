@@ -44,6 +44,7 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
   // console.log("busySocketIds:", busySocketIds);
   // if (busySocketIds.includes(senderSocketId)) {
   if (connectedSocketIds[senderSocketId]) {
+    console.log("inside 1st if of getOtherPersonSocketId");
     recieverSocketId = connectedSocketIds[senderSocketId];
     // delete connectedSocketIds[senderSocketId];
     recieverName = socketIdUserNameMapping[recieverSocketId];
@@ -51,9 +52,8 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
       recieverSocketId,
       recieverName,
     };
-    // busySocketIds.push(recieverSocketId);
-    // busySocketIds.push(senderSocketId);
   } else {
+    console.log("inside 2nd if of getOtherPersonSocketId");
     console.log("Free Socket len:", freeSocketIds.length);
     if (freeSocketIds.length < 2) {
       console.log("o1sender:", senderSocketId);
@@ -98,18 +98,37 @@ io.on("connection", (socket) => {
   console.log("a user connected");
 
   socket.on("addUser", (username) => {
-    console.log("Adding user:", username);
-    // userSocketIds.push(socket.id);
-    freeSocketIds.push(socket.id);
-    console.log("user being added id", socket.id);
-    console.log("Free Socket IDs:", freeSocketIds);
-    freeSocketIds.forEach((id) => {
-      if (id !== socket.id) {
-        io.to(id).emit("tryAgainToPair", username);
-      }
-    });
-    socketIdUserNameMapping[socket.id] = username;
+    if (socketIdUserNameMapping[socket.id]) {
+      console.log("User already added:", username);
+    } else {
+      console.log("Adding user:", username);
+      // userSocketIds.push(socket.id);
+      freeSocketIds.push(socket.id);
+      console.log("user being added id", socket.id);
+      console.log("Free Socket IDs:", freeSocketIds);
+      freeSocketIds.forEach((id) => {
+        if (id !== socket.id) {
+          io.to(id).emit("tryAgainToPair", username);
+        }
+      });
+      socketIdUserNameMapping[socket.id] = username;
+    }
     // console.log("User Socket IDs:", userSocketIds);
+  });
+
+  socket.on("freeUser", () => {
+    console.log("Freeing user:", socket.id);
+    const freeIndex = freeSocketIds.indexOf(socket.id);
+    console.log("Free Index:", freeIndex);
+    if (freeIndex === -1) {
+      freeSocketIds.push(socket.id);
+      freeSocketIds.forEach((id) => {
+        if (id !== socket.id) {
+          io.to(id).emit("tryAgainToPair", socketIdUserNameMapping[socket.id]);
+        }
+      });
+    }
+    console.log("Free Socket IDs:", freeSocketIds);
   });
 
   socket.on("connectedToUserMessage", ({ recieverSocketId }) => {
@@ -127,6 +146,18 @@ io.on("connection", (socket) => {
     io.to(recieverSocketId).emit("recieveChatMessage", {
       message,
     });
+  });
+
+  socket.on("performCleaning", () => {
+    if (connectedSocketIds[socket.id]) {
+      console.log("Cleaning up");
+      io.to(connectedSocketIds[socket.id]).emit(
+        "settingDisconnectedUserMessage"
+      );
+      delete connectedSocketIds[connectedSocketIds[socket.id]];
+      delete connectedSocketIds[socket.id];
+    }
+    // freeSocketIds.push(socket.id);
   });
 
   socket.on("disconnect", () => {
@@ -148,13 +179,6 @@ io.on("connection", (socket) => {
       }
       console.log("freeIds:", freeSocketIds);
     }
-
-    // const busyIndex = busySocketIds.indexOf(socket.id);
-    // if (busyIndex !== -1) {
-    //   busySocketIds.splice(busyIndex, 1);
-    //   io.to(socket.id).emit("settingDisconnectedUserMessage");
-    // }
-    // console.log("busyIds:", busySocketIds);
 
     delete socketIdUserNameMapping[socket.id];
   });

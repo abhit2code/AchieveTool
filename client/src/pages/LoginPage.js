@@ -22,7 +22,7 @@ const LoginPage = () => {
         })
         .then((res) => {
           console.log(res.data);
-          socket.emit("addUser", username);
+          // socket.emit("addUser", username);
           // login([username, socket]);
           login(username);
           navigate("/chat");

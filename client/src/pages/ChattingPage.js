@@ -3,8 +3,7 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Box,
-  TextField,
+  IconButton,
   Button,
   Input,
 } from "@mui/material";
@@ -14,6 +13,7 @@ import { useUserContext } from "../context/UserContext";
 import "./ChattingPageStyle.css";
 import axios from "axios";
 import socket from "../ChatSocket";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 // import { io } from "socket.io-client";
 
 const ChattingPage = () => {
@@ -35,7 +35,7 @@ const ChattingPage = () => {
 
   const sendMsgBtController = (e) => {
     e.preventDefault();
-    if (newMessage.trim() === "") {
+    if (newMessage.trim() === "" || Object.keys(reciever).length === 0) {
       return;
     }
     const timestamp = Date.now();
@@ -80,6 +80,12 @@ const ChattingPage = () => {
 
   const reconnectToUser = async () => {
     try {
+      socket.emit("performCleaning");
+      socket.emit("freeUser");
+      setMessages([]);
+      setNewMessage("");
+      setReciever({});
+      connectToUser();
     } catch (error) {
       console.log("Error reconnecting to other person: ", error);
     }
@@ -106,6 +112,10 @@ const ChattingPage = () => {
   }, [Object.keys(reciever)[0]]);
 
   useEffect(() => {
+    socket.emit("addUser", userName);
+  }, []);
+
+  useEffect(() => {
     socket.on("settingConnectedUserMessage", (data) => {
       setMessages([
         ...messages,
@@ -122,6 +132,7 @@ const ChattingPage = () => {
           noOne: [`Disconnected to ${Object.keys(reciever)[0]}`, "", "info"],
         },
       ]);
+      setReciever({});
     });
 
     socket.on("tryAgainToPair", (data) => {
@@ -168,10 +179,24 @@ const ChattingPage = () => {
           borderStyle: "solid",
         }}
       >
-        <AppBar position="static">
+        <AppBar
+          position="static"
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
           <Toolbar>
             <Typography variant="h6">{""}</Typography>
           </Toolbar>
+          <IconButton
+            onClick={reconnectToUser}
+            color="inherit"
+            sx={{ marginRight: "6px" }}
+          >
+            <RestartAltIcon />
+          </IconButton>
         </AppBar>
         <div
           ref={messageBoxRef} // Attach ref to the MessageBox div
