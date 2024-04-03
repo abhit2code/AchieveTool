@@ -1,0 +1,19 @@
+.changingSentenceNeutral{
+    color: white;
+    padding-right: 2%;
+}
+
+.changingSentenceNeutral:hover {
+  transform: scale(1.4);
+  color: greenyellow;
+}
+
+.suggestion{
+    height: 100%;
+    color: white;
+}
+
+.suggestion:hover {
+  transform: scale(1.4);
+  color: yellow;
+}

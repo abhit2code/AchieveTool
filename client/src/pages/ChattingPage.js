@@ -6,6 +6,7 @@ import {
   IconButton,
   Button,
   Input,
+  TextField,
 } from "@mui/material";
 import { format, set } from "date-fns";
 import Message from "../components/Message";
@@ -14,6 +15,8 @@ import "./ChattingPageStyle.css";
 import axios from "axios";
 import socket from "../ChatSocket";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import SendIcon from "@mui/icons-material/Send";
+import AchieveTool from "../components/AchieveTool";
 
 const ChattingPage = () => {
   const usert = useUserContext();
@@ -240,31 +243,49 @@ const ChattingPage = () => {
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
             alignItems: "center",
             height: "11.5%",
-            backgroundColor: "lightyellow",
           }}
         >
-          <Input
+          <TextField
             onKeyDown={(event) =>
               event.key === "Enter" ? sendMsgBtController(event) : null
             }
             id="outlined-basic"
             placeholder="Type a message"
-            label="Type a message"
+            // label="Message"
             variant="outlined"
             onChange={(e) => setNewMessage(e.target.value)}
             value={newMessage}
-            style={{ width: "80%" }}
+            style={{ width: "79%", marginLeft: "3%", backgroundColor: "white" }}
           />
-          <Button
-            variant="contained"
-            onClick={sendMsgBtController}
-            style={{ marginLeft: "3%", width: "10%", height: "60%" }}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "65%",
+              width: "17%",
+            }}
           >
-            Send
-          </Button>
+            <AchieveTool />
+            <SendIcon
+              className="sendButton"
+              color="inherit"
+              variant="contained"
+              onClick={sendMsgBtController}
+              style={{
+                // marginRight: "0.5%",
+                width: "40%",
+                height: "60%",
+                // color: "blue",
+                transition: "transform 0.3s",
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
