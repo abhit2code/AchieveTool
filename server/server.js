@@ -37,20 +37,20 @@ app.post("/api/v1/users/createUser", (req, res) => {
 app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
   console.log("Getting socket ID");
   const senderSocketId = req.query.socketId;
-  let recieverSocketId;
-  let recieverName;
+  let receiverSocketId;
+  let receiverNameS;
   let response;
   console.log("Sender Socket ID:", senderSocketId);
   // console.log("busySocketIds:", busySocketIds);
   // if (busySocketIds.includes(senderSocketId)) {
   if (connectedSocketIds[senderSocketId]) {
     console.log("inside 1st if of getOtherPersonSocketId");
-    recieverSocketId = connectedSocketIds[senderSocketId];
+    receiverSocketId = connectedSocketIds[senderSocketId];
     // delete connectedSocketIds[senderSocketId];
-    recieverName = socketIdUserNameMapping[recieverSocketId];
+    receiverNameS = socketIdUserNameMapping[receiverSocketId];
     response = {
-      recieverSocketId,
-      recieverName,
+      receiverSocketId,
+      receiverNameS,
     };
   } else {
     console.log("inside 2nd if of getOtherPersonSocketId");
@@ -59,22 +59,22 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
       console.log("o1sender:", senderSocketId);
       // response = "No other user available";
       response = {
-        recieverSocketId: null,
-        recieverName: null,
+        receiverSocketId: null,
+        receiverNameS: null,
       };
     } else {
       console.log("o2 sender:", senderSocketId);
       do {
-        recieverSocketId =
+        receiverSocketId =
           freeSocketIds[Math.floor(Math.random() * freeSocketIds.length)];
-      } while (recieverSocketId === senderSocketId);
+      } while (receiverSocketId === senderSocketId);
 
-      recieverName = socketIdUserNameMapping[recieverSocketId];
+      receiverNameS = socketIdUserNameMapping[receiverSocketId];
       response = {
-        recieverSocketId,
-        recieverName,
+        receiverSocketId,
+        receiverNameS,
       };
-      // busySocketIds.push(recieverSocketId);
+      // busySocketIds.push(receiverSocketId);
       // busySocketIds.push(senderSocketId);
 
       const freeIndex1 = freeSocketIds.indexOf(senderSocketId);
@@ -82,13 +82,13 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
         freeSocketIds.splice(freeIndex1, 1);
       }
 
-      const freeIndex2 = freeSocketIds.indexOf(recieverSocketId);
+      const freeIndex2 = freeSocketIds.indexOf(receiverSocketId);
       if (freeIndex2 !== -1) {
         freeSocketIds.splice(freeIndex2, 1);
       }
 
-      connectedSocketIds[recieverSocketId] = senderSocketId;
-      connectedSocketIds[senderSocketId] = recieverSocketId;
+      connectedSocketIds[receiverSocketId] = senderSocketId;
+      connectedSocketIds[senderSocketId] = receiverSocketId;
     }
   }
   res.send(response);
@@ -131,19 +131,19 @@ io.on("connection", (socket) => {
     console.log("Free Socket IDs:", freeSocketIds);
   });
 
-  socket.on("connectedToUserMessage", ({ recieverSocketId }) => {
+  socket.on("connectedToUserMessage", ({ receiverSocketId }) => {
     console.log(
       "Connected to user message",
-      recieverSocketId,
-      socketIdUserNameMapping[recieverSocketId]
+      receiverSocketId,
+      socketIdUserNameMapping[receiverSocketId]
     );
-    io.to(recieverSocketId).emit("settingConnectedUserMessage", {
-      message: `connected to ${socketIdUserNameMapping[socket.id]}`,
+    io.to(receiverSocketId).emit("settingConnectedUserMessage", {
+      message: `Connected to ${socketIdUserNameMapping[socket.id]}`,
     });
   });
 
-  socket.on("sendChatMessage", ({ recieverSocketId, message }) => {
-    io.to(recieverSocketId).emit("recieveChatMessage", {
+  socket.on("sendChatMessage", ({ receiverSocketId, message }) => {
+    io.to(receiverSocketId).emit("recieveChatMessage", {
       message,
     });
   });
@@ -167,10 +167,10 @@ io.on("connection", (socket) => {
     );
 
     if (connectedSocketIds[socket.id]) {
-      const recieverSocketId = connectedSocketIds[socket.id];
+      const receiverSocketId = connectedSocketIds[socket.id];
       delete connectedSocketIds[socket.id];
-      delete connectedSocketIds[recieverSocketId];
-      io.to(recieverSocketId).emit("settingDisconnectedUserMessage");
+      delete connectedSocketIds[receiverSocketId];
+      io.to(receiverSocketId).emit("settingDisconnectedUserMessage");
     } else {
       const freeIndex = freeSocketIds.indexOf(socket.id);
 
