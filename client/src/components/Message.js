@@ -59,7 +59,9 @@ const Message = (props) => {
           </span>
         </div>
       ) : (
-        <p style={{ color: "black" }}>{Object.values(props.message)[0][0]}</p>
+        <p style={{ color: "black", marginLeft: "40%" }}>
+          {Object.values(props.message)[0][0]}
+        </p>
       )}
     </>
   );

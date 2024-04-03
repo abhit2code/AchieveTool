@@ -14,11 +14,8 @@ import "./ChattingPageStyle.css";
 import axios from "axios";
 import socket from "../ChatSocket";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-// import { io } from "socket.io-client";
 
 const ChattingPage = () => {
-  // const socket = io("http://localhost:8900");
-
   const usert = useUserContext();
 
   const userName = usert.user;
@@ -26,16 +23,20 @@ const ChattingPage = () => {
   console.log("Username:", userName);
   console.log("Socket ID:", socket.id);
 
+  const receiverName = useRef("");
+
+  const [searchingStatus, setSearchingStatus] = useState(true);
+
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
-  const [reciever, setReciever] = useState({});
+  const [receiver, setReceiver] = useState({});
 
   const messageBoxRef = useRef(null);
 
   const sendMsgBtController = (e) => {
     e.preventDefault();
-    if (newMessage.trim() === "" || Object.keys(reciever).length === 0) {
+    if (newMessage.trim() === "" || Object.keys(receiver).length === 0) {
       return;
     }
     const timestamp = Date.now();
@@ -44,25 +45,30 @@ const ChattingPage = () => {
       { [userName]: [newMessage, format(timestamp, "h:mm a"), "chatting"] },
     ]);
     socket.emit("sendChatMessage", {
-      recieverSocketId: reciever[Object.keys(reciever)[0]],
+      receiverSocketId: receiver[Object.keys(receiver)[0]],
       message: newMessage,
     });
     setNewMessage("");
   };
 
   const connectToUser = async () => {
-    console.log("In connectToUser", reciever);
+    console.log("In connectToUser", receiver);
     try {
       await axios
         .get(
           `http://localhost:5000/api/v1/users/getOtherPersonSocketId?socketId=${socket.id}`
         )
         .then((res) => {
-          if (res.data.recieverName) {
-            const { recieverSocketId, recieverName } = res.data;
+          console.log("res.data outside if: ", res.data);
+          if (res.data.receiverNameS) {
+            const { receiverSocketId, receiverNameS } = res.data;
             console.log("res data: ", res.data);
-            console.log("setting reciever: ", recieverSocketId, recieverName);
-            setReciever({ [recieverName]: recieverSocketId });
+            console.log("setting receiver: ", receiverSocketId, receiverNameS);
+            setSearchingStatus(false);
+            receiverName.current = receiverNameS;
+            console.log("receiverName.current: ", receiverName.current);
+            setReceiver({ [receiverNameS]: receiverSocketId });
+            console.log("receiver: ", receiver);
           }
         })
         .catch((err) => {
@@ -84,32 +90,33 @@ const ChattingPage = () => {
       socket.emit("freeUser");
       setMessages([]);
       setNewMessage("");
-      setReciever({});
+      setReceiver({});
+      setSearchingStatus(true);
       connectToUser();
+      receiverName.current = "";
     } catch (error) {
       console.log("Error reconnecting to other person: ", error);
     }
   };
 
   useEffect(() => {
-    // Scroll to the bottom of the MessageBox container
     if (messageBoxRef.current) {
       messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
     }
   }, [messages]);
 
   useEffect(() => {
-    if (Object.keys(reciever).length !== 0) {
-      console.log("reciever:", reciever);
+    if (Object.keys(receiver).length !== 0) {
+      console.log("receiver:", receiver);
       console.log(
-        "sending the message to reciever: ",
-        reciever[Object.keys(reciever)[0]]
+        "sending the message to receiver: ",
+        receiver[Object.keys(receiver)[0]]
       );
       socket.emit("connectedToUserMessage", {
-        recieverSocketId: reciever[Object.keys(reciever)[0]],
+        receiverSocketId: receiver[Object.keys(receiver)[0]],
       });
     }
-  }, [Object.keys(reciever)[0]]);
+  }, [Object.keys(receiver)[0]]);
 
   useEffect(() => {
     socket.emit("addUser", userName);
@@ -129,10 +136,10 @@ const ChattingPage = () => {
       setMessages([
         ...messages,
         {
-          noOne: [`Disconnected to ${Object.keys(reciever)[0]}`, "", "info"],
+          noOne: [`Disconnected to ${Object.keys(receiver)[0]}`, "", "info"],
         },
       ]);
-      setReciever({});
+      setReceiver({});
     });
 
     socket.on("tryAgainToPair", (data) => {
@@ -144,7 +151,7 @@ const ChattingPage = () => {
       setMessages([
         ...messages,
         {
-          [Object.keys(reciever)[0]]: [
+          [Object.keys(receiver)[0]]: [
             data.message,
             format(Date.now(), "h:mm a"),
             "chatting",
@@ -188,7 +195,7 @@ const ChattingPage = () => {
           }}
         >
           <Toolbar>
-            <Typography variant="h6">{""}</Typography>
+            <Typography variant="h6">{receiverName.current}</Typography>
           </Toolbar>
           <IconButton
             onClick={reconnectToUser}
@@ -207,6 +214,21 @@ const ChattingPage = () => {
             overflowY: "auto",
           }}
         >
+          {searchingStatus ? (
+            <div
+              style={{
+                marginTop: "10px",
+                height: "10px",
+                backgroundColor: "yellow",
+                height: "5%",
+                alignContent: "center",
+                justifyContent: "center",
+                display: "flex",
+              }}
+            >
+              Please wait, Searching someone to pair!!
+            </div>
+          ) : null}
           {messages.map((m, index) => (
             <Message
               key={index}
