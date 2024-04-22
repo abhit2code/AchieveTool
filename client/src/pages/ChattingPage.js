@@ -22,7 +22,6 @@ const ChattingPage = () => {
   const usert = useUserContext();
 
   const userName = usert.user;
-  // socket.emit("addUser", userName);
   console.log("Username:", userName);
   console.log("Socket ID:", socket.id);
 
@@ -34,6 +33,10 @@ const ChattingPage = () => {
   const [messages, setMessages] = useState([]);
 
   const [receiver, setReceiver] = useState({});
+
+  const [messageSent, setMessageSent] = useState("");
+
+  const [messageReceived, setMessageReceived] = useState("");
 
   const messageBoxRef = useRef(null);
 
@@ -47,6 +50,7 @@ const ChattingPage = () => {
       ...messages,
       { [userName]: [newMessage, format(timestamp, "h:mm a"), "chatting"] },
     ]);
+    setMessageSent(newMessage);
     socket.emit("sendChatMessage", {
       receiverSocketId: receiver[Object.keys(receiver)[0]],
       message: newMessage,
@@ -133,6 +137,7 @@ const ChattingPage = () => {
           noOne: [data.message, "", "info"],
         },
       ]);
+      setSearchingStatus(false);
     });
 
     socket.on("settingDisconnectedUserMessage", (data) => {
@@ -161,6 +166,7 @@ const ChattingPage = () => {
           ],
         },
       ]);
+      setMessageReceived(data.message);
     });
     return () => {
       socket.off("settingConnectedUserMessage");
@@ -271,17 +277,19 @@ const ChattingPage = () => {
               width: "17%",
             }}
           >
-            <AchieveTool />
+            <AchieveTool
+              newMessage={newMessage}
+              messageReceived={messageReceived}
+              messageSent={messageSent}
+            />
             <SendIcon
               className="sendButton"
               color="inherit"
               variant="contained"
               onClick={sendMsgBtController}
               style={{
-                // marginRight: "0.5%",
                 width: "40%",
                 height: "60%",
-                // color: "blue",
                 transition: "transform 0.3s",
               }}
             />
