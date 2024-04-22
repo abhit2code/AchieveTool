@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
+import Replicate from "replicate";
 
 const app = express();
 
 app.use(express.json());
-// app.use(cookieParser());
 
 app.use(cors());
 
@@ -23,7 +23,7 @@ const io = new Server(8900, {
 });
 
 app.get("/api", (req, res) => {
-  res.send("Hello World!");
+  res.send("Jay Saraf is bhadva!");
 });
 
 app.post("/api/v1/users/createUser", (req, res) => {
@@ -41,8 +41,6 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
   let receiverNameS;
   let response;
   console.log("Sender Socket ID:", senderSocketId);
-  // console.log("busySocketIds:", busySocketIds);
-  // if (busySocketIds.includes(senderSocketId)) {
   if (connectedSocketIds[senderSocketId]) {
     console.log("inside 1st if of getOtherPersonSocketId");
     receiverSocketId = connectedSocketIds[senderSocketId];
@@ -57,7 +55,6 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
     console.log("Free Socket len:", freeSocketIds.length);
     if (freeSocketIds.length < 2) {
       console.log("o1sender:", senderSocketId);
-      // response = "No other user available";
       response = {
         receiverSocketId: null,
         receiverNameS: null,
@@ -74,8 +71,6 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
         receiverSocketId,
         receiverNameS,
       };
-      // busySocketIds.push(receiverSocketId);
-      // busySocketIds.push(senderSocketId);
 
       const freeIndex1 = freeSocketIds.indexOf(senderSocketId);
       if (freeIndex1 !== -1) {
@@ -102,7 +97,6 @@ io.on("connection", (socket) => {
       console.log("User already added:", username);
     } else {
       console.log("Adding user:", username);
-      // userSocketIds.push(socket.id);
       freeSocketIds.push(socket.id);
       console.log("user being added id", socket.id);
       console.log("Free Socket IDs:", freeSocketIds);
@@ -113,7 +107,6 @@ io.on("connection", (socket) => {
       });
       socketIdUserNameMapping[socket.id] = username;
     }
-    // console.log("User Socket IDs:", userSocketIds);
   });
 
   socket.on("freeUser", () => {
@@ -182,6 +175,32 @@ io.on("connection", (socket) => {
 
     delete socketIdUserNameMapping[socket.id];
   });
+});
+
+const replicate_api_token = "r8_QBzHlETvrwL3LTCH3nDcDhsh1dMlmkR4GjEUE";
+
+const replicate = new Replicate({
+  // auth: process.env.REPLICATE_API_TOKEN,
+  auth: replicate_api_token,
+});
+
+app.post("/api/v1/replicate/makeApiCall", async (req, res) => {
+  console.log("Making API call to Replicate");
+  const input = {
+    prompt: req.body.inputText,
+    system_prompt: req.body.system_prompt,
+    max_new_tokens: 1500,
+    min_new_tokens: -1,
+  };
+
+  const output = await replicate.run(
+    "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
+    { input }
+  );
+
+  console.log("Output from Replicate:", output);
+
+  res.send(output);
 });
 
 app.listen(5000, () => {
