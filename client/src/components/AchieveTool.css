@@ -25,15 +25,33 @@
 
 .responseRectangle {
   position: absolute;
-  /* bottom: 10%; */
   bottom: calc(100% + 10px);
-  left: 50%; /* Position it in the middle horizontally */
-  transform: translate(-50%); /* Center it */
+  left: 50%; 
+  transform: translate(-50%); 
   background-color: white;
   border: 1px solid black;
   padding: 10px;
-  width: 300px; /* Set a fixed width */
-  max-height: 300px; /* Set a maximum height */
-  overflow-y: auto; /* Add scrollbars if content exceeds the maximum height */
-  z-index: 999; /* Ensure it's above other content */
+  width: 300px; 
+  max-height: 500px;
+  overflow-y: auto;
+  z-index: 999;
+}
+
+
+.suggestions,
+.reasoning {
+  background-color: #f0f0f0; /* Light gray background */
+  border: 1px solid #ccc; /* Gray border */
+  border-radius: 5px; /* Rounded corners */
+  padding: 10px; /* Padding for content */
+  margin-bottom: 10px; /* Margin between suggestions and reasoning */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Box shadow for 3D effect */
+}
+
+.suggestions:hover{
+  transform: translateY(-2px); /* Lift the box on hover for a slight 3D effect */
+}
+
+.suggestions {
+  cursor: pointer;
 }
