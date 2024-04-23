@@ -1,4 +1,4 @@
-FROM phi
+FROM llama3:70b
 
 PARAMETER temperature 0.6
 

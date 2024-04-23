@@ -281,6 +281,8 @@ const ChattingPage = () => {
               newMessage={newMessage}
               messageReceived={messageReceived}
               messageSent={messageSent}
+              setNewMessage={setNewMessage}
+              connected={Object.keys(receiver).length !== 0 ? true : false}
             />
             <SendIcon
               className="sendButton"
