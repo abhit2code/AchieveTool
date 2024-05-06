@@ -178,17 +178,20 @@ const ChattingPage = () => {
 
   return (
     <div
+      className="ChattingPageContainer"
       style={{
         backgroundColor: "lightgray",
         height: "100vh",
+        width: "100vw",
         justifyContent: "center",
         display: "flex",
       }}
     >
       <div
+        className="ChattingContainer"
         style={{
           backgroundColor: "white",
-          height: "85%",
+          height: "85vh",
           width: "50%",
           border: "2px",
           borderColor: "black",
@@ -226,8 +229,7 @@ const ChattingPage = () => {
           {searchingStatus ? (
             <div
               style={{
-                marginTop: "10px",
-                height: "10px",
+                marginTop: "2%",
                 backgroundColor: "yellow",
                 height: "5%",
                 alignContent: "center",
@@ -235,7 +237,9 @@ const ChattingPage = () => {
                 display: "flex",
               }}
             >
-              Please wait, Searching someone to pair!!
+              <p style={{ marginTop: "0", fontSize: "120%" }}>
+                Please wait, Searching someone to pair!!
+              </p>
             </div>
           ) : null}
           {messages.map((m, index) => (
@@ -283,6 +287,8 @@ const ChattingPage = () => {
               messageSent={messageSent}
               setNewMessage={setNewMessage}
               connected={Object.keys(receiver).length !== 0 ? true : false}
+              receiverName={receiverName.current}
+              userName={userName}
             />
             <SendIcon
               className="sendButton"
@@ -290,7 +296,9 @@ const ChattingPage = () => {
               variant="contained"
               onClick={sendMsgBtController}
               style={{
-                width: "40%",
+                flex: "1",
+                // minWidth: "37%",
+                // width: "40%",
                 height: "60%",
                 transition: "transform 0.3s",
               }}

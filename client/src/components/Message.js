@@ -7,11 +7,12 @@ const Message = (props) => {
     flexDirection: "column",
     alignItems: "vertical-align",
     marginLeft: "0.7%",
+    marginBottom: "7px",
   };
 
   const msg_text_sender = {
-    fontSize: "20px",
-    marginBottom: "1.5px",
+    fontSize: "21px",
+    margin: "0px",
     backgroundColor: "white",
     padding: "10px",
     borderRadius: "0px 10px 10px 10px",
@@ -23,11 +24,12 @@ const Message = (props) => {
     flexDirection: "column",
     alignItems: "flex-end",
     marginRight: "0.7%",
+    marginBottom: "10px",
   };
 
   const msg_text_owner = {
-    fontSize: "20px",
-    marginBottom: "1.5px",
+    fontSize: "21px",
+    margin: "0px",
     backgroundColor: "#8da4f1",
     color: "white",
     padding: "10px",
@@ -36,7 +38,7 @@ const Message = (props) => {
   };
 
   const msg_time = {
-    fontSize: "12px",
+    fontSize: "13px",
     color: "gray",
     fontWeight: "300px",
     paddingLeft: "6px",
@@ -59,7 +61,7 @@ const Message = (props) => {
           </span>
         </div>
       ) : (
-        <p style={{ color: "black", marginLeft: "40%" }}>
+        <p style={{ color: "black", marginLeft: "37%", fontSize: "120%" }}>
           {Object.values(props.message)[0][0]}
         </p>
       )}
