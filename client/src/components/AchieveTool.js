@@ -68,8 +68,11 @@ const AchieveTool = (props) => {
           console.log("parsedResponse:", parsedResponse);
           const suggestions = parsedResponse[1]?.split("Reasoning")[0]?.trim();
           console.log("suggestions:", suggestions);
-          const reasoning = parsedResponse[2]?.trim();
+          let reasoning = parsedResponse[2]?.trim();
+          reasoning = reasoning.replaceAll("P1", props.userName);
+          reasoning = reasoning.replaceAll("P2", props.receiverName);
           console.log("reasoning:", reasoning);
+          console.log(props.userName, props.receiverName);
           setApiResponse({ suggestions, reasoning });
         })
         .catch((error) => {
@@ -137,7 +140,7 @@ const AchieveTool = (props) => {
         border: "1px solid green",
         borderRadius: "1px",
         height: "100%",
-        width: "50%",
+        width: "45%",
         display: "flex",
         flexDirection: "row",
         justifyContent: "center",
@@ -154,14 +157,14 @@ const AchieveTool = (props) => {
             ? "received"
             : ""
         }`}
-        style={{ fontSize: "2rem" }}
+        style={{ fontSize: "2.3rem" }}
         ref={iconRef}
         onClick={() => {
           setShowResponse(!showResponse);
           // makeApiCall("");
         }}
       />
-      <LightbulbIcon className="suggestion" style={{ fontSize: "2rem" }} />
+      {/* <LightbulbIcon className="suggestion" style={{ fontSize: "2rem" }} /> */}
 
       {props.connected && showResponse && (
         <div

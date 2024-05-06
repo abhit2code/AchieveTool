@@ -40,6 +40,7 @@
 
 .suggestions,
 .reasoning {
+  width: 280px;
   background-color: #f0f0f0; /* Light gray background */
   border: 1px solid #ccc; /* Gray border */
   border-radius: 5px; /* Rounded corners */
