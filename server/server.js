@@ -1,13 +1,25 @@
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
-import Replicate from "replicate";
 
 const app = express();
 
 app.use(express.json());
 
-app.use(cors());
+// app.use(cors());
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "*"
+    // "http://localhost:3000"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,  Authorization");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Expose-Headers", "set-cookie");
+  next();
+});
+
 
 let userNames = [];
 // let userSocketIds = [];
@@ -16,9 +28,16 @@ let freeSocketIds = [];
 let connectedSocketIds = {};
 let socketIdUserNameMapping = {};
 
-const io = new Server(8900, {
+// const io = new Server(8800, {
+//   cors: {
+//     // origin: "http://localhost:3000",
+//     origin: "http://192.168.3.30:3000/",
+//   },
+// });
+
+const io = new Server(8800, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
   },
 });
 
@@ -175,32 +194,6 @@ io.on("connection", (socket) => {
 
     delete socketIdUserNameMapping[socket.id];
   });
-});
-
-const replicate_api_token = "r8_QBzHlETvrwL3LTCH3nDcDhsh1dMlmkR4GjEUE";
-
-const replicate = new Replicate({
-  // auth: process.env.REPLICATE_API_TOKEN,
-  auth: replicate_api_token,
-});
-
-app.post("/api/v1/replicate/makeApiCall", async (req, res) => {
-  console.log("Making API call to Replicate");
-  const input = {
-    prompt: req.body.inputText,
-    system_prompt: req.body.system_prompt,
-    max_new_tokens: 1500,
-    min_new_tokens: -1,
-  };
-
-  const output = await replicate.run(
-    "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
-    { input }
-  );
-
-  console.log("Output from Replicate:", output);
-
-  res.send(output);
 });
 
 app.listen(5000, () => {

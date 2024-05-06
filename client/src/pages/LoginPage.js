@@ -17,7 +17,7 @@ const LoginPage = () => {
   const handleLogin = async () => {
     try {
       await axios
-        .post("http://localhost:5000/api/v1/users/createUser", {
+        .post("http://192.168.3.30:5000/api/v1/users/createUser", {
           username: username,
         })
         .then((res) => {
