@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
-import Replicate from "replicate";
 
 const app = express();
 
@@ -177,31 +176,6 @@ io.on("connection", (socket) => {
   });
 });
 
-const replicate_api_token = "r8_QBzHlETvrwL3LTCH3nDcDhsh1dMlmkR4GjEUE";
-
-const replicate = new Replicate({
-  // auth: process.env.REPLICATE_API_TOKEN,
-  auth: replicate_api_token,
-});
-
-app.post("/api/v1/replicate/makeApiCall", async (req, res) => {
-  console.log("Making API call to Replicate");
-  const input = {
-    prompt: req.body.inputText,
-    system_prompt: req.body.system_prompt,
-    max_new_tokens: 1500,
-    min_new_tokens: -1,
-  };
-
-  const output = await replicate.run(
-    "meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
-    { input }
-  );
-
-  console.log("Output from Replicate:", output);
-
-  res.send(output);
-});
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
