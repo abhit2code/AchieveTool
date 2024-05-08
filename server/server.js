@@ -1,12 +1,25 @@
 import express from "express";
 import cors from "cors";
+import axios from "axios";
 import { Server } from "socket.io";
 
 const app = express();
 
 app.use(express.json());
 
-app.use(cors());
+// app.use(cors());
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "*"
+    // "http://localhost:3000"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,  Authorization");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Expose-Headers", "set-cookie");
+  next();
+});
 
 let userNames = [];
 // let userSocketIds = [];
@@ -17,7 +30,7 @@ let socketIdUserNameMapping = {};
 
 const io = new Server(8900, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://192.168.3.30:3000",
   },
 });
 
@@ -176,6 +189,29 @@ io.on("connection", (socket) => {
   });
 });
 
+app.post("/api/v1/apiCall/callOllama", async (req, res) => {
+  try {
+    await axios
+      .post("http://127.0.0.1:11434/api/generate", {
+        model: req.body.model,
+        prompt: req.body.prompt,
+        stream: req.body.stream,
+      })
+      .then((response) => {
+        // console.log(response)
+        res.status(200).json({ success: true, data: response.data.response });
+      })
+      .catch((error) => {
+        console.error("Error calling API at server:", error);
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        }
+        res.status(500).json({ success: false, error: error });
+      });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");

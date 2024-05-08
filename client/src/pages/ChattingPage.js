@@ -63,7 +63,7 @@ const ChattingPage = () => {
     try {
       await axios
         .get(
-          `http://localhost:5000/api/v1/users/getOtherPersonSocketId?socketId=${socket.id}`
+          `http://192.168.3.30:5000/api/v1/users/getOtherPersonSocketId?socketId=${socket.id}`
         )
         .then((res) => {
           console.log("res.data outside if: ", res.data);

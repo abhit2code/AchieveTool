@@ -54,7 +54,7 @@ const AchieveTool = (props) => {
       setCancelTokenSource(newCancelTokenSource);
       await axios
         .post(
-          "http://localhost:3001/api/generate",
+          "http://192.168.3.30:5000/api/v1/apiCall/callOllama",
           {
             model: "relExpPhi",
             prompt: prompt,
@@ -63,7 +63,7 @@ const AchieveTool = (props) => {
           { cancelToken: newCancelTokenSource.token }
         )
         .then((response) => {
-          console.log("response:", response.data.response);
+          console.log("response:", response.data);
           const parsedResponse = response.data.response.split("=");
           console.log("parsedResponse:", parsedResponse);
           const suggestions = parsedResponse[1]?.split("Reasoning")[0]?.trim();
@@ -74,12 +74,6 @@ const AchieveTool = (props) => {
           console.log("reasoning:", reasoning);
           console.log(props.userName, props.receiverName);
           setApiResponse({ suggestions, reasoning });
-        })
-        .catch((error) => {
-          console.error("Error calling API at server:", error);
-          if (axios.isCancel(error)) {
-            console.log("Request canceled", error.message);
-          }
         });
     } catch (error) {
       console.log(error);
