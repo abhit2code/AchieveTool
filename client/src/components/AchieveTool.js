@@ -6,6 +6,7 @@ import NotificationImportantIcon from "@mui/icons-material/NotificationImportant
 import "./AchieveTool.css";
 import axios from "axios";
 import { set } from "date-fns";
+import { useGenderContext } from "../context/GenderContext";
 
 const AchieveTool = (props) => {
   const [messages, setMessages] = useState("");
@@ -26,17 +27,22 @@ const AchieveTool = (props) => {
   const iconRef = useRef(null);
   const responseRef = useRef(null);
 
-  useEffect(() => {
-    return () => {
-      // if (cancelTokenSource) {
-      //   cancelTokenSource.cancel("Request canceled due to component unmount");
-      // }
-    };
-  }, []);
+  const { gender } = useGenderContext();
+
+  const malePattern = /\b(?:male|man)\b/gi;
+  const femalePattern = /\b(?:female|woman)\b/gi;
+
+  // useEffect(() => {
+  //   return () => {
+  //     // if (cancelTokenSource) {
+  //     //   cancelTokenSource.cancel("Request canceled due to component unmount");
+  //     // }
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (props.messageSent.trim() !== "") {
-      setMessages(messages + "P1: " + props.messageSent + ";");
+      setMessages(messages + gender + ": " + props.messageSent + "#");
     }
     // if (cancelTokenSource) {
     //   cancelTokenSource.cancel("Request canceled due to component unmount");
@@ -53,7 +59,8 @@ const AchieveTool = (props) => {
 
   useEffect(() => {
     if (props.messageReceived.trim() !== "") {
-      setMessages(messages + "P1: " + props.messageReceived + ";");
+      const receiverG = gender === "Male" ? "Female" : "Male";
+      setMessages(messages + receiverG + ": " + props.messageReceived + "#");
     }
   }, [props.messageReceived]);
 
@@ -72,6 +79,7 @@ const AchieveTool = (props) => {
             {
               prompt: prompt,
               stream: false,
+              gender: gender,
             }
             // { cancelToken: newCancelTokenSource.token }
           )
@@ -79,13 +87,19 @@ const AchieveTool = (props) => {
             console.log("response:", response.data.text);
             const parsedResponse = response.data.text.split("=");
             console.log("parsedResponse:", parsedResponse);
-            const suggestions = parsedResponse[1]
-              ?.split("Reasoning")[0]
-              ?.trim();
+            let suggestions = parsedResponse[1]?.split("Reasoning")[0]?.trim();
             console.log("suggestions:", suggestions);
+            suggestions = suggestions.replaceAll("#", "");
             let reasoning = parsedResponse[2]?.trim();
-            reasoning = reasoning.replaceAll("P1", props.userName);
-            reasoning = reasoning.replaceAll("P2", props.receiverName);
+            reasoning = reasoning.replace(
+              new RegExp(gender === "Male" ? malePattern : femalePattern, "gi"),
+              props.userName
+            );
+            const receiverG = gender === "Male" ? "Female" : "Male";
+            reasoning = reasoning.replace(
+              receiverG === "Male" ? malePattern : femalePattern,
+              props.receiverName
+            );
             console.log("reasoning:", reasoning);
             console.log(props.userName, props.receiverName);
             if (!newMsgEmpty.current) {
@@ -98,7 +112,7 @@ const AchieveTool = (props) => {
               console.log("Request canceled", error.message);
             }
           });
-      }, 1000);
+      }, 950);
       setTimeoutId(newTimeoutId);
     } catch (error) {
       console.log(error);
@@ -113,7 +127,7 @@ const AchieveTool = (props) => {
       } else if (props.newMessage.trim() !== "") {
         newMsgEmpty.current = false;
         if (!suggestionsClicked) {
-          makeApiCall(messages + "P1: " + props.newMessage + ";");
+          makeApiCall(messages + gender + ": " + props.newMessage + "#");
         }
         if (suggestionsClicked) {
           setSuggestionsClicked(false);
