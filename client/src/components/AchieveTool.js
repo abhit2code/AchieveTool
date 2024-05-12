@@ -17,16 +17,20 @@ const AchieveTool = (props) => {
 
   const [suggestionsClicked, setSuggestionsClicked] = useState(false);
 
-  const [cancelTokenSource, setCancelTokenSource] = useState(null);
+  // const [cancelTokenSource, setCancelTokenSource] = useState(null);
+
+  const newMsgEmpty = useRef(true);
+
+  const [timeoutId, setTimeoutId] = useState(null);
 
   const iconRef = useRef(null);
   const responseRef = useRef(null);
 
   useEffect(() => {
     return () => {
-      if (cancelTokenSource) {
-        cancelTokenSource.cancel("Request canceled due to component unmount");
-      }
+      // if (cancelTokenSource) {
+      //   cancelTokenSource.cancel("Request canceled due to component unmount");
+      // }
     };
   }, []);
 
@@ -34,8 +38,16 @@ const AchieveTool = (props) => {
     if (props.messageSent.trim() !== "") {
       setMessages(messages + "P1: " + props.messageSent + ";");
     }
-    if (cancelTokenSource) {
-      cancelTokenSource.cancel("Request canceled due to component unmount");
+    // if (cancelTokenSource) {
+    //   cancelTokenSource.cancel("Request canceled due to component unmount");
+    // }
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    } else {
+      setApiResponse({
+        suggestions: "",
+        reasoning: "",
+      });
     }
   }, [props.messageSent]);
 
@@ -46,41 +58,48 @@ const AchieveTool = (props) => {
   }, [props.messageReceived]);
 
   const makeApiCall = async (prompt) => {
-    if (cancelTokenSource) {
-      cancelTokenSource.cancel("Request canceled due to component unmount");
-    }
+    // if (cancelTokenSource) {
+    //   cancelTokenSource.cancel("Request canceled due to component unmount");
+    // }
+    clearTimeout(timeoutId);
     try {
-      const newCancelTokenSource = axios.CancelToken.source();
-      setCancelTokenSource(newCancelTokenSource);
-      await axios
-        .post(
-          "http://localhost:3001/api/generate",
-          {
-            model: "relExpPhi",
-            prompt: prompt,
-            stream: false,
-          },
-          { cancelToken: newCancelTokenSource.token }
-        )
-        .then((response) => {
-          console.log("response:", response.data.response);
-          const parsedResponse = response.data.response.split("=");
-          console.log("parsedResponse:", parsedResponse);
-          const suggestions = parsedResponse[1]?.split("Reasoning")[0]?.trim();
-          console.log("suggestions:", suggestions);
-          let reasoning = parsedResponse[2]?.trim();
-          reasoning = reasoning.replaceAll("P1", props.userName);
-          reasoning = reasoning.replaceAll("P2", props.receiverName);
-          console.log("reasoning:", reasoning);
-          console.log(props.userName, props.receiverName);
-          setApiResponse({ suggestions, reasoning });
-        })
-        .catch((error) => {
-          console.error("Error calling API at server:", error);
-          if (axios.isCancel(error)) {
-            console.log("Request canceled", error.message);
-          }
-        });
+      // const newCancelTokenSource = axios.CancelToken.source();
+      // setCancelTokenSource(newCancelTokenSource);
+      const newTimeoutId = setTimeout(async () => {
+        await axios
+          .post(
+            "http://localhost:5000/api/v1/apiCall/callOllama",
+            {
+              prompt: prompt,
+              stream: false,
+            }
+            // { cancelToken: newCancelTokenSource.token }
+          )
+          .then((response) => {
+            console.log("response:", response.data.text);
+            const parsedResponse = response.data.text.split("=");
+            console.log("parsedResponse:", parsedResponse);
+            const suggestions = parsedResponse[1]
+              ?.split("Reasoning")[0]
+              ?.trim();
+            console.log("suggestions:", suggestions);
+            let reasoning = parsedResponse[2]?.trim();
+            reasoning = reasoning.replaceAll("P1", props.userName);
+            reasoning = reasoning.replaceAll("P2", props.receiverName);
+            console.log("reasoning:", reasoning);
+            console.log(props.userName, props.receiverName);
+            if (!newMsgEmpty.current) {
+              setApiResponse({ suggestions, reasoning });
+            }
+          })
+          .catch((error) => {
+            console.error("Error calling API at server:", error);
+            if (axios.isCancel(error)) {
+              console.log("Request canceled", error.message);
+            }
+          });
+      }, 1000);
+      setTimeoutId(newTimeoutId);
     } catch (error) {
       console.log(error);
     }
@@ -89,14 +108,19 @@ const AchieveTool = (props) => {
   useEffect(() => {
     console.log("in comp newMessage useEff");
     if (props.connected) {
-      if (props.newMessage.trim() !== "") {
+      if (props.newMessage.trim() === "") {
+        newMsgEmpty.current = true;
+      } else if (props.newMessage.trim() !== "") {
+        newMsgEmpty.current = false;
         if (!suggestionsClicked) {
           makeApiCall(messages + "P1: " + props.newMessage + ";");
         }
         if (suggestionsClicked) {
           setSuggestionsClicked(false);
         }
-      } else if (apiResponse.suggestions !== "") {
+      }
+
+      if (apiResponse.suggestions !== "") {
         setApiResponse({
           suggestions: "",
           reasoning: "",
