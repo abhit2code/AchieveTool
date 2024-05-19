@@ -16,7 +16,8 @@ const Message = (props) => {
     backgroundColor: "white",
     padding: "10px",
     borderRadius: "0px 10px 10px 10px",
-    maxWidth: "max-content",
+    maxWidth: "70%", // Setting maximum width
+    wordWrap: "break-word", // Ensuring long words wrap
   };
 
   const msg_cont_owner = {
@@ -34,7 +35,8 @@ const Message = (props) => {
     color: "white",
     padding: "10px",
     borderRadius: "10px 0px 10px 10px",
-    maxWidth: "max-content",
+    maxWidth: "70%", // Setting maximum width
+    wordWrap: "break-word", // Ensuring long words wrap
   };
 
   const msg_time = {
@@ -61,7 +63,7 @@ const Message = (props) => {
           </span>
         </div>
       ) : (
-        <p style={{ color: "black", marginLeft: "37%", fontSize: "120%" }}>
+        <p style={{ color: "black", marginLeft: "33%", fontSize: "120%" }}>
           {Object.values(props.message)[0][0]}
         </p>
       )}

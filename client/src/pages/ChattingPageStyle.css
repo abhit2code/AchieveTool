@@ -17,7 +17,8 @@
   color: blue;
 }
 
+
 .sendButton:hover {
-  transform: scale(1.2); /* Increase size on hover */
-  color: green; /* Change color on hover */
+  /* transform: scale(1.2);  */
+  color: green; 
 }

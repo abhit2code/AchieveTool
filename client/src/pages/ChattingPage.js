@@ -40,6 +40,41 @@ const ChattingPage = () => {
 
   const messageBoxRef = useRef(null);
 
+  const [textFieldHeight, setTextFieldHeight] = useState("auto"); // State to hold the height of the TextField
+  const textFieldRef = useRef(null); // Ref to the TextField component
+
+  const updateTextFieldHeight = () => {
+    if (textFieldRef.current) {
+      const newHeight = textFieldRef.current.scrollHeight + 15 + "px";
+      setTextFieldHeight(newHeight);
+    }
+  };
+
+  useEffect(() => {
+    updateTextFieldHeight();
+  }, [newMessage]);
+
+  // useEffect(() => {
+  //   // Calculate the height of the TextField based on its content when the component mounts or when the content changes
+  //   const updateTextFieldHeight = () => {
+  //     if (textFieldRef.current) {
+  //       const newHeight = textFieldRef.current.scrollHeight + 15 + "px";
+  //       setTextFieldHeight(newHeight);
+  //     }
+  //   };
+
+  //   updateTextFieldHeight(); // Call updateTextFieldHeight initially
+
+  //   textFieldRef.current.addEventListener("onChange", updateTextFieldHeight);
+
+  //   return () => {
+  //     textFieldRef.current.removeEventListener(
+  //       "onChange",
+  //       updateTextFieldHeight
+  //     );
+  //   };
+  // }, []);
+
   const sendMsgBtController = (e) => {
     e.preventDefault();
     if (newMessage.trim() === "" || Object.keys(receiver).length === 0) {
@@ -63,7 +98,7 @@ const ChattingPage = () => {
     try {
       await axios
         .get(
-          `http://localhost:5000/api/v1/users/getOtherPersonSocketId?socketId=${socket.id}`
+          `${process.env.REACT_APP_SERVER_URL}/api/v1/users/getOtherPersonSocketId?socketId=${socket.id}`
         )
         .then((res) => {
           console.log("res.data outside if: ", res.data);
@@ -218,91 +253,106 @@ const ChattingPage = () => {
           </IconButton>
         </AppBar>
         <div
-          ref={messageBoxRef} // Attach ref to the MessageBox div
-          className="MessageBox"
-          style={{
-            height: "79%",
-            backgroundColor: " #ddddf7",
-            overflowY: "auto",
-          }}
+          style={{ display: "flex", flexDirection: "column", height: "90.5%" }}
         >
-          {searchingStatus ? (
-            <div
-              style={{
-                marginTop: "2%",
-                backgroundColor: "yellow",
-                height: "5%",
-                alignContent: "center",
-                justifyContent: "center",
-                display: "flex",
-              }}
-            >
-              <p style={{ marginTop: "0", fontSize: "120%" }}>
-                Please wait, Searching someone to pair!!
-              </p>
-            </div>
-          ) : null}
-          {messages.map((m, index) => (
-            <Message
-              key={index}
-              owner={Object.keys(m)[0] === userName}
-              message={m}
-            />
-          ))}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            height: "11.5%",
-          }}
-        >
-          <TextField
-            onKeyDown={(event) =>
-              event.key === "Enter" ? sendMsgBtController(event) : null
-            }
-            id="outlined-basic"
-            placeholder="Type a message"
-            // label="Message"
-            variant="outlined"
-            onChange={(e) => setNewMessage(e.target.value)}
-            value={newMessage}
-            style={{ width: "79%", marginLeft: "3%", backgroundColor: "white" }}
-          />
           <div
+            ref={messageBoxRef} // Attach ref to the MessageBox div
+            className="MessageBox"
+            style={{
+              // height: "79%",
+              flex: 1,
+              backgroundColor: " #ddddf7",
+              overflowY: "auto",
+            }}
+          >
+            {searchingStatus ? (
+              <div
+                style={{
+                  marginTop: "2%",
+                  backgroundColor: "yellow",
+                  height: "5%",
+                  alignContent: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                }}
+              >
+                <p style={{ marginTop: "0", fontSize: "120%" }}>
+                  Please wait, Searching someone to pair!!
+                </p>
+              </div>
+            ) : null}
+            {messages.map((m, index) => (
+              <Message
+                key={index}
+                owner={Object.keys(m)[0] === userName}
+                message={m}
+              />
+            ))}
+          </div>
+          <div
+            className="MessageInputContainer"
             style={{
               display: "flex",
               flexDirection: "row",
-              justifyContent: "center",
+              justifyContent: "space-between",
               alignItems: "center",
-              height: "65%",
-              width: "17%",
+              // height: "11.5%",
+              // height: messageInputHeight,
+              height: textFieldHeight,
             }}
           >
-            <AchieveTool
-              newMessage={newMessage}
-              messageReceived={messageReceived}
-              messageSent={messageSent}
-              setNewMessage={setNewMessage}
-              connected={Object.keys(receiver).length !== 0 ? true : false}
-              receiverName={receiverName.current}
-              userName={userName}
-            />
-            <SendIcon
-              className="sendButton"
-              color="inherit"
-              variant="contained"
-              onClick={sendMsgBtController}
+            <TextField
+              ref={textFieldRef}
+              onKeyDown={(event) =>
+                event.key === "Enter" ? sendMsgBtController(event) : null
+              }
+              id="outlined-basic"
+              placeholder="Type a message"
+              multiline
+              minRows={1}
+              maxRows={3}
+              variant="outlined"
+              onChange={(e) => setNewMessage(e.target.value)}
+              value={newMessage}
               style={{
-                flex: "1",
-                // minWidth: "37%",
-                // width: "40%",
-                height: "60%",
-                transition: "transform 0.3s",
+                width: "79%",
+                marginLeft: "3%",
+                backgroundColor: "white",
               }}
             />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "65%",
+                width: "17%",
+              }}
+            >
+              <AchieveTool
+                newMessage={newMessage}
+                messageReceived={messageReceived}
+                messageSent={messageSent}
+                setNewMessage={setNewMessage}
+                connected={Object.keys(receiver).length !== 0 ? true : false}
+                receiverName={receiverName.current}
+                userName={userName}
+              />
+              <SendIcon
+                className="sendButton"
+                color="inherit"
+                variant="contained"
+                onClick={sendMsgBtController}
+                style={{
+                  flex: "1",
+                  // minWidth: "37%",
+                  // width: "40%",
+                  height: "65%",
+                  // transition: "transform 0.3s",
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -1,24 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { TextField, Button, Typography, Box } from "@mui/material";
+import React, { useState } from "react"; // Import useState
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Select,
+  MenuItem,
+  InputLabel,
+} from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../context/UserContext";
+import { useGenderContext } from "../context/GenderContext";
 import socket from "../ChatSocket";
 import { set } from "date-fns";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // State for storing error message
 
   const { login, user } = useUserContext();
-
   const navigate = useNavigate();
 
+  const { gender, updateGender } = useGenderContext();
+
   const handleLogin = async () => {
+    if (!gender) {
+      // Check if gender is not selected
+      setError("Please select your gender");
+      return;
+    }
+
     try {
       await axios
-        .post("http://localhost:5000/api/v1/users/createUser", {
+        .post(`${process.env.REACT_APP_SERVER_URL}/api/v1/users/createUser`, {
           username: username,
+          gender: gender, // Sending selected gender to the server
         })
         .then((res) => {
           console.log(res.data);
@@ -34,23 +51,6 @@ const LoginPage = () => {
       console.error("Error creating user:", error);
     }
   };
-
-  //   const checkIfUserExists = (username) => {
-  //     try {
-  //       axios
-  //         .get(
-  //           `http://localhost:5000/api/v1/users/checkUser?userName=${username}`
-  //         )
-  //         .then((res) => {
-  //           return res.data;
-  //         })
-  //         .catch((err) => {
-  //           console.error(err);
-  //         });
-  //     } catch (error) {
-  //       console.error("Error getting response:", error);
-  //     }
-  //   };
 
   return (
     <Box
@@ -70,14 +70,35 @@ const LoginPage = () => {
           variant="outlined"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          // error={Boolean(error)}
-          // helperText={error}
           margin="normal"
         />
+        <Box marginTop={2}>
+          {" "}
+          {/* Adding margin top to create space for the dropdown */}
+          <Typography variant="body1" gutterBottom>
+            Select your Gender
+          </Typography>
+          <Select
+            fullWidth
+            value={gender}
+            onChange={(e) => updateGender(e.target.value)}
+            variant="outlined"
+            error={Boolean(error)}
+          >
+            <MenuItem value="Male">Male</MenuItem>
+            <MenuItem value="Female">Female</MenuItem>
+          </Select>
+          {error && (
+            <Typography variant="body2" color="error">
+              {error}
+            </Typography>
+          )}
+        </Box>
         <Button
           variant="contained"
           color="primary"
           fullWidth
+          style={{ marginTop: "1rem" }}
           onClick={handleLogin}
         >
           Login

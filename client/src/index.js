@@ -7,6 +7,7 @@ import Testing from "./pages/Testing";
 import NotFoundPage from "./pages/NotFoundPage";
 import reportWebVitals from "./reportWebVitals";
 import { UserProvider } from "./context/UserContext";
+import { GenderProvider } from "./context/GenderContext";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -26,7 +27,9 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   // <React.StrictMode>
   <UserProvider>
-    <RouterProvider router={router} />
+    <GenderProvider>
+      <RouterProvider router={router} />
+    </GenderProvider>
   </UserProvider>
   // </React.StrictMode>
 );
