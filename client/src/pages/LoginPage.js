@@ -33,7 +33,7 @@ const LoginPage = () => {
 
     try {
       await axios
-        .post("http://localhost:5000/api/v1/users/createUser", {
+        .post(`${process.env.REACT_APP_SERVER_URL}/api/v1/users/createUser`, {
           username: username,
           gender: gender, // Sending selected gender to the server
         })

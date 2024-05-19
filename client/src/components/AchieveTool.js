@@ -75,7 +75,7 @@ const AchieveTool = (props) => {
       const newTimeoutId = setTimeout(async () => {
         await axios
           .post(
-            "http://localhost:5000/api/v1/apiCall/callOllama",
+            `${process.env.REACT_APP_SERVER_URL}/api/v1/apiCall/callOllama`,
             {
               prompt: prompt,
               stream: false,
@@ -100,6 +100,7 @@ const AchieveTool = (props) => {
               receiverG === "Male" ? malePattern : femalePattern,
               props.receiverName
             );
+            reasoning = reasoning.replaceAll("#", "");
             console.log("reasoning:", reasoning);
             console.log(props.userName, props.receiverName);
             if (!newMsgEmpty.current) {
@@ -195,7 +196,7 @@ const AchieveTool = (props) => {
             ? "received"
             : ""
         }`}
-        style={{ fontSize: "2.3rem" }}
+        style={{ fontSize: "2rem" }}
         ref={iconRef}
         onClick={() => {
           setShowResponse(!showResponse);
