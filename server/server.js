@@ -56,7 +56,7 @@ Reasoning= <reasoning>
  Here is the chatting:
 `;
 
-const server = http.createServer(app); // Create the HTTP server
+const server = https.createServer(app); // Create the HTTP server
 
 const io = new Server(server, {
   cors: {
