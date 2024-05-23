@@ -60,7 +60,8 @@ const server = http.createServer(app); // Create the HTTP server
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "https://chatting-8lew.onrender.com"],
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"],
   },
 });
 
