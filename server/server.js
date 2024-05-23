@@ -12,7 +12,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "*", // Replace with your client domain
+    origin: "https://chatting-8lew.onrender.com", // Replace with your client domain
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
@@ -80,7 +80,7 @@ const server = https.createServer(app); // Create the HTTP server
 
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins
+    origin: "https://chatting-8lew.onrender.com", // Allow all origins
     methods: ["GET", "POST"],
   },
 });
