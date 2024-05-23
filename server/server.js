@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
-import http from "http"; // Import the http module
+import https from "https"; // Import the http module
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 
