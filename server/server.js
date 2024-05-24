@@ -10,25 +10,25 @@ const app = express();
 app.use(express.json());
 // app.use(cors());
 
-app.use(
-  cors({
-    origin: "https://chatting-8lew.onrender.com", // Replace with your client domain
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://chatting-8lew.onrender.com", // Replace with your client domain
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type"],
+//     credentials: true,
+//   })
+// );
 
-// app.use((req, res, next) => {
-//   res.header(
-//     "Access-Control-Allow-Origin",
-//     "https://chatting-8lew.onrender.com"
-//   );
-//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-//   res.header("Access-Control-Allow-Headers", "Content-Type,  Authorization");
-//   res.header("Access-Control-Allow-Credentials", true);
-//   next();
-// });
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://chatting-8lew.onrender.com"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,  Authorization");
+  res.header("Access-Control-Allow-Credentials", true);
+  next();
+});
 
 let userNames = [];
 let freeSocketIds = [];
