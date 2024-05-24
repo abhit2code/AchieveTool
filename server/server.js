@@ -76,7 +76,7 @@ Reasoning= <reasoning>
  Here is the chatting:
 `;
 
-const server = https.createServer(app); // Create the HTTP server
+const server = https.createServer(app);
 
 const io = new Server(server, {
   cors: {
@@ -244,6 +244,6 @@ app.post("/api/v1/apiCall/callOllama", async (req, res) => {
   }
 });
 
-server.listen(5000, () => {
+server.listen(process.env.PORT || 5000, () => {
   console.log("Server is running on port 5000");
 });
