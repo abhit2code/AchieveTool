@@ -1,10 +1,18 @@
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
+import { config } from "dotenv";
+import http from "http";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
+
+config({
+  path: ".env",
+});
 
 app.use(express.json());
 
@@ -40,12 +48,11 @@ const safetySettings = [
 
 const model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
 
-// const system_prompt =
-//   "You are an expert in relationships. You know various aspects of relationships(respecting your partner, flirting with them, providing support, and many others). You will be provided with the online chatting between two persons named P1 and P2. The conversation would have the format of <speaker>: <message>; <speaker>: <message>. \nYou need to act as a relationship assistant for a person named P1. \nYou need to analyze the conversation between them. Try to understand the context and what is going on in the conversation. \nBased on the analysis of the conversation, you need to generate output, which will consist of the following two things: \n1 Suggestions= Under this section, you need to only generate modified sentence for the last message of P1 in the context of ongoing conversation. \nWhile generating sentences for the last message of P1, use your relationship expert knowledge to see whether the last message of P1 should be said or not in the ongoing context of the conversation: \n- If the message could be said, then generate that same sentence in a more engaging or flirty way \n- If the message should not be spoken, generate an alternate sentence according to the relationship expert. \n2 Reasoning= Under this section, you, as an expert, should explain why the messages in the suggestion sections have been generated. \nPoints to strictly remember while generating the output: \n1. The output should only include two sections(based on above guidelines) in the following format: \nSuggestions=\n<Generate sentences based on the guidelines mentioned above>\nReasoning=\n<reasons for the sentences generated in the suggestions section>\nDont generate anything extra apart from suggestions and reasoning. Also inside each of the section, only the things mentioned above should be present.\n2. strictly IN THE Suggestions SECTION ONLY MODIFIED SENTENCE SHOULD BE PRESENT. DONT ADD ANY extra exclamatory mark(!) and Speaker(P1 or P2) at the end of suggestion. Following is the conversation:\n";
-
 const system_prompt = `You are a relationship expert, who knows various aspects of manintaining strong relationships(like respecting other person, flirting, engaging meaningfully, playful teasing, address and resepectfully resolve the conflict, and many more). \nChatting between Male and Female will be provided to you. The Purpose of <gender> is to develop a relationship with other. The chatting provided to you will be of following format: <speaker>: Message# <speaker>: Message ... Speaker will hold value of Male or Female. \nYou need to analyze the ongoing online chatting between two persons and generate the advice for the last message of <gender>. The advice will consist of two sections: \nSection 1. Alternate Sentence: An alternate sentence for the <gender> last message based on following rules-\nsee whether the last message should be spoken in the ongoing context based on purpose of developing a relationship? \nIf the message could be spoken then generate the sentence in more flirtatious way. \nIf the message should not be spoken, then generate an alternate sentence(that abide by rules of developing relatioship) conveying the original intention. \nSection 2. Reasoning:\nIn this section give the reasoning for the sentence you will be generating in "Alternate sentence" section. \nNote: \nRemember in "Alternate Sentence" section, generate alternate sentence without mentioning who is speaking that message and also # symbol.\n2. The alternate sentences you will be generating should be strictly in context to online chatting between two persons. Also, The message should be very strictly in accordance to the previous messages between two persons. Strictly, dont be too flirtatious that the original intent of the last message of <gender> gets lost. 3. The reasoning should be strictly less then 50 words.\nthe output by you should be strictly in the following format:\n  Alternate Sentence= <alternate sentence for last message of <gender> based on rules mentioned in above "Alternate Sentence" section> \nReasoning= <reasoning>\n Here is the chatting:\n`;
 
-const io = new Server(8900, {
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
   cors: {
     origin: ["http://localhost:3000", "https://chatting-8lew.onrender.com"],
   },
@@ -222,6 +229,30 @@ app.post("/api/v1/apiCall/callOllama", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
+// -------------------------------------deployment-------------------------------------
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const __dirname1 = path.resolve(__dirname, "..");
+
+console.log(process.env.NODE_ENV);
+console.log(__dirname1);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "/client/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname1, "client", "build", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running....");
+  });
+}
+
+// -------------------------------------deployment-------------------------------------
+
+httpServer.listen(5000, () => {
   console.log("Server is running on port 5000");
 });
