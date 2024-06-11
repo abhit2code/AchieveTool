@@ -11,6 +11,7 @@ const Message = (props) => {
   };
 
   const msg_text_sender = {
+    display: "inline-block",
     fontSize: "21px",
     margin: "0px",
     backgroundColor: "white",
@@ -29,6 +30,7 @@ const Message = (props) => {
   };
 
   const msg_text_owner = {
+    display: "inline-block",
     fontSize: "21px",
     margin: "0px",
     backgroundColor: "#8da4f1",
