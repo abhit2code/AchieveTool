@@ -11,11 +11,11 @@ The code in this repo is a **Proof of Concept(POC)** build for the original assi
 **Tech stack**
 
 • Web Dev part
-  – Frontend: ReactJS, HTML, CSS
-  – Backend: NodeJS and ExpressJS
-  – API calls using Axios
+* Frontend: ReactJS, HTML, CSS
+* Backend: NodeJS and ExpressJS
+* API calls using Axios
 
 
 • AI part
-  – Large Language Model used is gemini-pro
-  – Prompt engineering is used to generate suggestions and reasoning
+* Large Language Model used is gemini-pro
+* Prompt engineering is used to generate suggestions and reasoning
