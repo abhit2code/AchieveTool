@@ -9,10 +9,13 @@ The code in this repo is a **Proof of Concept(POC)** build for the original assi
 3. Integrated with AchieveTool(purpose uses initially: Developing a relationship)
 
 **Tech stack**
+
 • Web Dev part
   – Frontend: ReactJS, HTML, CSS
   – Backend: NodeJS and ExpressJS
   – API calls using Axios
+
+
 • AI part
   – Large Language Model used is gemini-pro
   – Prompt engineering is used to generate suggestions and reasoning
