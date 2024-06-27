@@ -6,7 +6,7 @@ The code in this repo is a **Proof of Concept(POC)** build for the original assi
 
 1. Chatting Website
 2. Random Pairing among online people
-3. Integrated with AchieveTool(purpose uses initially: Developing a relationship)
+3. Integrated with AchieveTool(purpose used initially as initiating step: Developing a relationship)
 
 **Tech stack**
 
@@ -25,4 +25,5 @@ The code in this repo is a **Proof of Concept(POC)** build for the original assi
 
 
 **Test The Live Product**
-Link[(https://chat-vn4t.onrender.com)]
+
+[Link](https://chat-vn4t.onrender.com)
