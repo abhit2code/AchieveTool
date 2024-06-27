@@ -7,12 +7,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
 const app = express();
 
-config({
-  path: ".env",
-});
+dotenv.config();
 
 app.use(express.json());
 
@@ -25,7 +24,7 @@ let freeSocketIds = [];
 let connectedSocketIds = {};
 let socketIdUserNameMapping = {};
 
-const genAI = new GoogleGenerativeAI("AIzaSyBStmvirKk0L2TsE7eu0xM2sHWYu6I0CKE");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const safetySettings = [
   {
