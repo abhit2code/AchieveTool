@@ -3,6 +3,9 @@ import cors from "cors";
 import { Server } from "socket.io";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
@@ -17,7 +20,7 @@ let freeSocketIds = [];
 let connectedSocketIds = {};
 let socketIdUserNameMapping = {};
 
-const genAI = new GoogleGenerativeAI("AIzaSyBStmvirKk0L2TsE7eu0xM2sHWYu6I0CKE");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const safetySettings = [
   {
@@ -49,10 +52,6 @@ const io = new Server(8900, {
   cors: {
     origin: ["http://localhost:3000", "https://chatting-8lew.onrender.com"],
   },
-});
-
-app.get("/api", (req, res) => {
-  res.send("Rahul chomu kaisa h!");
 });
 
 app.post("/api/v1/users/createUser", (req, res) => {
