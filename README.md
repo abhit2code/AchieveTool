@@ -19,3 +19,10 @@ The code in this repo is a **Proof of Concept(POC)** build for the original assi
 • AI part
 * Large Language Model used is gemini-pro
 * Prompt engineering is used to generate suggestions and reasoning
+
+• Deployment
+* On Render
+
+
+**Test The Live Product**
+Link[(https://chat-vn4t.onrender.com)]
