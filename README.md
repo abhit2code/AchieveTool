@@ -1,5 +1,7 @@
 Building a **conversational assistant** named **AchieveTool** that uses **Cognitive Computation through Large Language Models (LLMs) to provide people with psychological support and abundant knowledge for effective conversations**.
 
+Purpose of conversations could to be to develop a relationship, humor, parenting, Leadership, persuasion, etc.
+
 The code in this repo is a **Proof of Concept(POC)** build for the original assistant.
 
 **POC Characteristics:**
