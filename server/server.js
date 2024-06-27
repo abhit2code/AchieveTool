@@ -87,9 +87,6 @@ const io = new Server(server, {
   },
 });
 
-app.get("/api", (req, res) => {
-  res.send("TEJA chomu kaisa h!");
-});
 
 app.post("/api/v1/users/createUser", (req, res) => {
   console.log("Creating user");
