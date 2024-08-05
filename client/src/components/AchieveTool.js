@@ -42,7 +42,7 @@ const AchieveTool = (props) => {
 
   useEffect(() => {
     if (props.messageSent.trim() !== "") {
-      setMessages(messages + gender + ": " + props.messageSent + "#");
+      setMessages(messages + gender + ": " + props.messageSent + " \n");
     }
     // if (cancelTokenSource) {
     //   cancelTokenSource.cancel("Request canceled due to component unmount");
@@ -60,7 +60,7 @@ const AchieveTool = (props) => {
   useEffect(() => {
     if (props.messageReceived.trim() !== "") {
       const receiverG = gender === "Male" ? "Female" : "Male";
-      setMessages(messages + receiverG + ": " + props.messageReceived + "#");
+      setMessages(messages + receiverG + ": " + props.messageReceived + " \n");
     }
   }, [props.messageReceived]);
 
@@ -128,7 +128,7 @@ const AchieveTool = (props) => {
       } else if (props.newMessage.trim() !== "") {
         newMsgEmpty.current = false;
         if (!suggestionsClicked) {
-          makeApiCall(messages + gender + ": " + props.newMessage + "#");
+          makeApiCall(messages + gender + ": " + props.newMessage + " \n");
         }
         if (suggestionsClicked) {
           setSuggestionsClicked(false);

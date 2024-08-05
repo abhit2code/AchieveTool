@@ -57,9 +57,6 @@ const io = new Server(httpServer, {
   },
 });
 
-app.get("/api", (req, res) => {
-  res.send("Rahul chomu kaisa h!");
-});
 
 app.post("/api/v1/users/createUser", (req, res) => {
   console.log("Creating user");
