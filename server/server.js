@@ -3,6 +3,7 @@ import cors from "cors";
 import { Server } from "socket.io";
 import { config } from "dotenv";
 import http from "http";
+import https from "https"; // Import the http module
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import path from "path";
@@ -14,13 +15,30 @@ const app = express();
 dotenv.config();
 
 app.use(express.json());
+// app.use(cors());
 
-app.use(cors());
+// app.use(
+//   cors({
+//     origin: "https://chatting-8lew.onrender.com", // Replace with your client domain
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type"],
+//     credentials: true,
+//   })
+// );
+
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://chatting-8lew.onrender.com"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,  Authorization");
+  res.header("Access-Control-Allow-Credentials", true);
+  next();
+});
 
 let userNames = [];
-
 let freeSocketIds = [];
-
 let connectedSocketIds = {};
 let socketIdUserNameMapping = {};
 
@@ -47,13 +65,17 @@ const safetySettings = [
 
 const model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
 
+
 const system_prompt = `You are a relationship expert, who knows various aspects of manintaining strong relationships(like respecting other person, flirting, engaging meaningfully, playful teasing, address and resepectfully resolve the conflict, and many more). \nChatting between Male and Female will be provided to you. The Purpose of <gender> is to develop a relationship with other. The chatting provided to you will be of following format: <speaker>: Message# <speaker>: Message ... Speaker will hold value of Male or Female. \nYou need to analyze the ongoing online chatting between two persons and generate the advice for the last message of <gender>. The advice will consist of two sections: \nSection 1. Alternate Sentence: An alternate sentence for the <gender> last message based on following rules-\nsee whether the last message should be spoken in the ongoing context based on purpose of developing a relationship? \nIf the message could be spoken then generate the sentence in more flirtatious way. \nIf the message should not be spoken, then generate an alternate sentence(that abide by rules of developing relatioship) conveying the original intention. \nSection 2. Reasoning:\nIn this section give the reasoning for the sentence you will be generating in "Alternate sentence" section. \nNote: \nRemember in "Alternate Sentence" section, generate alternate sentence without mentioning who is speaking that message and also # symbol.\n2. The alternate sentences you will be generating should be strictly in context to online chatting between two persons. Also, The message should be very strictly in accordance to the previous messages between two persons. Strictly, dont be too flirtatious that the original intent of the last message of <gender> gets lost. 3. The reasoning should be strictly less then 50 words.\nthe output by you should be strictly in the following format:\n  Alternate Sentence= <alternate sentence for last message of <gender> based on rules mentioned in above "Alternate Sentence" section> \nReasoning= <reasoning>\n Here is the chatting:\n`;
 
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:3000", "https://chatting-8lew.onrender.com"],
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
   },
 });
 
@@ -76,7 +98,6 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
   if (connectedSocketIds[senderSocketId]) {
     console.log("inside 1st if of getOtherPersonSocketId");
     receiverSocketId = connectedSocketIds[senderSocketId];
-    // delete connectedSocketIds[senderSocketId];
     receiverNameS = socketIdUserNameMapping[receiverSocketId];
     response = {
       receiverSocketId,
@@ -86,13 +107,11 @@ app.get("/api/v1/users/getOtherPersonSocketId", (req, res) => {
     console.log("inside 2nd if of getOtherPersonSocketId");
     console.log("Free Socket len:", freeSocketIds.length);
     if (freeSocketIds.length < 2) {
-      console.log("o1sender:", senderSocketId);
       response = {
         receiverSocketId: null,
         receiverNameS: null,
       };
     } else {
-      console.log("o2 sender:", senderSocketId);
       do {
         receiverSocketId =
           freeSocketIds[Math.floor(Math.random() * freeSocketIds.length)];
@@ -144,7 +163,6 @@ io.on("connection", (socket) => {
   socket.on("freeUser", () => {
     console.log("Freeing user:", socket.id);
     const freeIndex = freeSocketIds.indexOf(socket.id);
-    console.log("Free Index:", freeIndex);
     if (freeIndex === -1) {
       freeSocketIds.push(socket.id);
       freeSocketIds.forEach((id) => {
@@ -157,32 +175,23 @@ io.on("connection", (socket) => {
   });
 
   socket.on("connectedToUserMessage", ({ receiverSocketId }) => {
-    console.log(
-      "Connected to user message",
-      receiverSocketId,
-      socketIdUserNameMapping[receiverSocketId]
-    );
     io.to(receiverSocketId).emit("settingConnectedUserMessage", {
       message: `Connected to ${socketIdUserNameMapping[socket.id]}`,
     });
   });
 
   socket.on("sendChatMessage", ({ receiverSocketId, message }) => {
-    io.to(receiverSocketId).emit("recieveChatMessage", {
-      message,
-    });
+    io.to(receiverSocketId).emit("recieveChatMessage", { message });
   });
 
   socket.on("performCleaning", () => {
     if (connectedSocketIds[socket.id]) {
-      console.log("Cleaning up");
       io.to(connectedSocketIds[socket.id]).emit(
         "settingDisconnectedUserMessage"
       );
       delete connectedSocketIds[connectedSocketIds[socket.id]];
       delete connectedSocketIds[socket.id];
     }
-    // freeSocketIds.push(socket.id);
   });
 
   socket.on("disconnect", () => {
@@ -198,7 +207,6 @@ io.on("connection", (socket) => {
       io.to(receiverSocketId).emit("settingDisconnectedUserMessage");
     } else {
       const freeIndex = freeSocketIds.indexOf(socket.id);
-
       if (freeIndex !== -1) {
         freeSocketIds.splice(freeIndex, 1);
       }
@@ -212,7 +220,6 @@ io.on("connection", (socket) => {
 app.post("/api/v1/apiCall/callOllama", async (req, res) => {
   try {
     let modified_prompt = system_prompt.replace(/<gender>/g, req.body.gender);
-    // console.log("Modified Prompt:", modified_prompt);
     const result = await model.generateContent(
       modified_prompt + req.body.prompt
     );
@@ -222,6 +229,7 @@ app.post("/api/v1/apiCall/callOllama", async (req, res) => {
     res.status(200).send({ text: text });
   } catch (error) {
     console.log(error);
+    res.status(500).send({ error: "An error occurred" });
   }
 });
 
