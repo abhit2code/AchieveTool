@@ -1,11 +1,18 @@
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
+import { config } from "dotenv";
+import http from "http";
 import https from "https"; // Import the http module
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
 const app = express();
+
+dotenv.config();
 
 app.use(express.json());
 // app.use(cors());
@@ -35,7 +42,7 @@ let freeSocketIds = [];
 let connectedSocketIds = {};
 let socketIdUserNameMapping = {};
 
-const genAI = new GoogleGenerativeAI("YOUR_API_KEY_HERE");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const safetySettings = [
   {
@@ -58,27 +65,12 @@ const safetySettings = [
 
 const model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
 
-const system_prompt = `You are a relationship expert, who knows various aspects of maintaining strong relationships (like respecting the other person, flirting, engaging meaningfully, playful teasing, addressing and respectfully resolving conflict, and many more). 
-Chatting between Male and Female will be provided to you. The Purpose of <gender> is to develop a relationship with the other. The chatting provided to you will be of the following format: <speaker>: Message# <speaker>: Message ... Speaker will hold value of Male or Female. 
-You need to analyze the ongoing online chatting between two persons and generate the advice for the last message of <gender>. The advice will consist of two sections: 
-Section 1. Alternate Sentence: An alternate sentence for the <gender> last message based on the following rules:
-see whether the last message should be spoken in the ongoing context based on the purpose of developing a relationship? 
-If the message could be spoken, then generate the sentence in a more flirtatious way. 
-If the message should not be spoken, then generate an alternate sentence (that abides by the rules of developing a relationship) conveying the original intention. 
-Section 2. Reasoning:
-In this section, give the reasoning for the sentence you will be generating in the "Alternate sentence" section. 
-Note: 
-Remember in the "Alternate Sentence" section, generate an alternate sentence without mentioning who is speaking that message and also # symbol.
-2. The alternate sentences you will be generating should be strictly in context to online chatting between two persons. Also, the message should be very strictly in accordance to the previous messages between the two persons. Strictly, don’t be too flirtatious that the original intent of the last message of <gender> gets lost. 3. The reasoning should be strictly less than 50 words.
-The output by you should be strictly in the following format:
-  Alternate Sentence= <alternate sentence for the last message of <gender> based on rules mentioned in the above "Alternate Sentence" section> 
-Reasoning= <reasoning>
- Here is the chatting:
-`;
 
-const server = https.createServer(app);
+const system_prompt = `You are a relationship expert, who knows various aspects of manintaining strong relationships(like respecting other person, flirting, engaging meaningfully, playful teasing, address and resepectfully resolve the conflict, and many more). \nChatting between Male and Female will be provided to you. The Purpose of <gender> is to develop a relationship with other. The chatting provided to you will be of following format: <speaker>: Message# <speaker>: Message ... Speaker will hold value of Male or Female. \nYou need to analyze the ongoing online chatting between two persons and generate the advice for the last message of <gender>. The advice will consist of two sections: \nSection 1. Alternate Sentence: An alternate sentence for the <gender> last message based on following rules-\nsee whether the last message should be spoken in the ongoing context based on purpose of developing a relationship? \nIf the message could be spoken then generate the sentence in more flirtatious way. \nIf the message should not be spoken, then generate an alternate sentence(that abide by rules of developing relatioship) conveying the original intention. \nSection 2. Reasoning:\nIn this section give the reasoning for the sentence you will be generating in "Alternate sentence" section. \nNote: \nRemember in "Alternate Sentence" section, generate alternate sentence without mentioning who is speaking that message and also # symbol.\n2. The alternate sentences you will be generating should be strictly in context to online chatting between two persons. Also, The message should be very strictly in accordance to the previous messages between two persons. Strictly, dont be too flirtatious that the original intent of the last message of <gender> gets lost. 3. The reasoning should be strictly less then 50 words.\nthe output by you should be strictly in the following format:\n  Alternate Sentence= <alternate sentence for last message of <gender> based on rules mentioned in above "Alternate Sentence" section> \nReasoning= <reasoning>\n Here is the chatting:\n`;
 
-const io = new Server(server, {
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
   cors: {
     origin: "*", // Allow all origins
     methods: ["GET", "POST"],
@@ -241,6 +233,30 @@ app.post("/api/v1/apiCall/callOllama", async (req, res) => {
   }
 });
 
-server.listen(5000, () => {
+// -------------------------------------deployment-------------------------------------
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const __dirname1 = path.resolve(__dirname, "..");
+
+console.log(process.env.NODE_ENV);
+console.log(__dirname1);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "/client/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname1, "client", "build", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running....");
+  });
+}
+
+// -------------------------------------deployment-------------------------------------
+
+httpServer.listen(5000, () => {
   console.log("Server is running on port 5000");
 });

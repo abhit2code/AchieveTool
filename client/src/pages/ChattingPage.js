@@ -54,27 +54,6 @@ const ChattingPage = () => {
     updateTextFieldHeight();
   }, [newMessage]);
 
-  // useEffect(() => {
-  //   // Calculate the height of the TextField based on its content when the component mounts or when the content changes
-  //   const updateTextFieldHeight = () => {
-  //     if (textFieldRef.current) {
-  //       const newHeight = textFieldRef.current.scrollHeight + 15 + "px";
-  //       setTextFieldHeight(newHeight);
-  //     }
-  //   };
-
-  //   updateTextFieldHeight(); // Call updateTextFieldHeight initially
-
-  //   textFieldRef.current.addEventListener("onChange", updateTextFieldHeight);
-
-  //   return () => {
-  //     textFieldRef.current.removeEventListener(
-  //       "onChange",
-  //       updateTextFieldHeight
-  //     );
-  //   };
-  // }, []);
-
   const sendMsgBtController = (e) => {
     e.preventDefault();
     if (newMessage.trim() === "" || Object.keys(receiver).length === 0) {
